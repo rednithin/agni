@@ -1,43 +1,53 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0"?>
 <root xmlns="urn:schemas-upnp-org:device-1-0">
-    <specVersion><major>1</major><minor>0</minor></specVersion>
-    <device>
-        <deviceType>urn:schemas-upnp-org:device:MediaServer:1</deviceType>
-        <friendlyName>{name}</friendlyName>
-        <manufacturer>P G Nithin Reddy</manufacturer>
-        <manufacturerURL>https://rednithin.github.io</manufacturerURL>
-        <modelDescription>model</modelDescription>
-        <modelName>rustymedia</modelName>
-        <modelNumber>1</modelNumber>
-        <modelURL>https://rednithin.github.io</modelURL>
-        <serialNumber>1</serialNumber>
-        <UDN>uuid:{uuid}</UDN>
-        <dlna:X_DLNADOC xmlns:dlna="urn:schemas-dlna-org:device-1-0">DMS-1.50</dlna:X_DLNADOC>
-        <presentationURL>/</presentationURL>
-        <iconList>
-            <!-- <icon> -->
-            <!-- 	<mimetype>image/png</mimetype> -->
-            <!-- 	<width>460</width> -->
-            <!-- 	<height>460</height> -->
-            <!-- 	<depth>24</depth> -->
-            <!-- 	<url>/icon.png</url> -->
-            <!-- </icon> -->
-        </iconList>
-        <serviceList>
-            <service>
-                <serviceType>urn:schemas-upnp-org:service:ContentDirectory:1</serviceType>
-                <serviceId>urn:upnp-org:serviceId:ContentDirectory</serviceId>
-                <controlURL>/content/control</controlURL>
-                <eventSubURL>/events/content</eventSubURL>
-                <SCPDURL>/content/desc.xml</SCPDURL>
-            </service>
-            <service>
-                <serviceType>urn:schemas-upnp-org:service:ConnectionManager:1</serviceType>
-                <serviceId>urn:upnp-org:serviceId:ConnectionManager</serviceId>
-                <controlURL>/connection/control</controlURL>
-                <eventSubURL>/events/connection</eventSubURL>
-                <SCPDURL>/connection/desc.xml</SCPDURL>
-            </service>
-        </serviceList>
-    </device>
+  <specVersion>
+    <major>1</major>
+    <minor>0</minor>
+  </specVersion>
+  <!-- <URLBase>/</URLBase> -->
+  <device>
+    <deviceType>urn:schemas-upnp-org:device:MediaServer:1</deviceType>
+    <friendlyName>{name}</friendlyName>
+    <manufacturer>Nithin Reddy</manufacturer>
+    <manufacturerURL>https://rednithin.github.io</manufacturerURL>
+    <modelDescription>{name} - Agni Media Server</modelDescription>
+    <modelName>agni</modelName>
+    <modelNumber>1</modelNumber>
+    <modelURL>https://rednithin.github.io</modelURL>
+    <serialNumber>1</serialNumber>
+    <UDN>uuid:{uuid}</UDN>
+    <UPC>Universal Product Code TODO</UPC>
+    <iconList>
+      <icon>
+        <mimetype>image/png</mimetype>
+        <width>409</width>
+        <height>854</height>
+        <depth>4</depth>
+        <url>/images/angi.png</url>
+      </icon>
+    </iconList>
+    <serviceList>
+      <service>
+        <serviceType>urn:schemas-upnp-org:service:ContentDirectory:1</serviceType>
+        <serviceId>urn:upnp-org:serviceId:ContentDirectory</serviceId>
+        <controlURL>/content/control</controlURL>
+        <eventSubURL>/events/content</eventSubURL>
+        <SCPDURL>/content/desc.xml</SCPDURL>
+      </service>
+      <service>
+        <serviceType>urn:schemas-upnp-org:service:ConnectionManager:1</serviceType>
+        <serviceId>urn:upnp-org:serviceId:ConnectionManager</serviceId>
+        <controlURL>/connection/control</controlURL>
+        <eventSubURL>/events/connection</eventSubURL>
+        <SCPDURL>/connection/desc.xml</SCPDURL>
+      </service>
+      <!-- <service>
+        <serviceType>urn:schemas-upnp-org:service:AVTransport:1</serviceType>
+        <serviceId>urn:upnp-org:serviceId:AVTransport</serviceId>
+        <controlURL>/avtransport/control</controlURL>
+        <eventSubURL>/events/avtransport</eventSubURL>
+        <SCPDURL>/avtransport/desc.xml</SCPDURL>
+      </service> -->
+    </serviceList>
+  </device>
 </root>
