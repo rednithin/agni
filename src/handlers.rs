@@ -4,7 +4,7 @@ use quick_xml::Reader;
 use crate::types;
     
 const ROOT_XML: &str = include_str!("root.xml");
-const CONTENT_XML: &str = include_str!("content.xml");
+const CONTENT_DESC_XML: &str = include_str!("content_desc.xml");
 const SOAP_ACTION :&str = "Soapaction";
 
 
@@ -25,7 +25,7 @@ pub fn content_desc_handler() -> BoxedFilter<(impl Reply,)> {
     warp::any()
         .and(warp::get())
         .and(warp::path!("content" / "desc.xml"))
-        .map(|| CONTENT_XML)
+        .map(|| CONTENT_DESC_XML)
         .boxed()
 }
 
