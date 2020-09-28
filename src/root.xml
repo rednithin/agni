@@ -18,13 +18,13 @@
     <UDN>uuid:{uuid}</UDN>
     <UPC>Universal Product Code TODO</UPC>
     <iconList>
-      <icon>
+      <!-- <icon>
         <mimetype>image/png</mimetype>
         <width>409</width>
         <height>854</height>
         <depth>4</depth>
         <url>/images/angi.png</url>
-      </icon>
+      </icon> -->
     </iconList>
     <serviceList>
       <service>
