@@ -6,6 +6,61 @@ const ROOT_XML: &str = include_str!("root.xml");
 const CONTENT_DESC_XML: &str = include_str!("content_desc.xml");
 const SOAP_ACTION :&str = "Soapaction";
 
+use types::{
+    Envelope,
+    Body,
+    BrowseResponse,
+    DidlLite,
+    Container,
+    XMLNS_DC,
+    XMLNS_DIDL,
+    XMLNS_UPNP,
+    ENVELOPE_ENCODING_STYLE,
+    XMLNS_ENVELOPE,
+    XMLNS_CONTENT_DIRECTORY,
+};
+
+fn get_browse_response() -> String {
+    let didl_result = DidlLite {
+        xmlns_dc: XMLNS_DC.to_string(),
+        xmlns_upnp: XMLNS_UPNP.to_string(),
+        xmlns: XMLNS_DIDL.to_string(),
+        containers: vec![
+            Container {
+                id: 1,
+                parent_id: 0,
+                title: "My Music".to_string(),
+                class: "object.container.storageFolder".to_string(),
+            }
+        ]
+    };
+    let response = Envelope {
+        encoding_style: ENVELOPE_ENCODING_STYLE.to_string(),
+        xmlns: XMLNS_ENVELOPE.to_string(),
+        body: Body {
+            xmlns: XMLNS_CONTENT_DIRECTORY.to_string(),
+            browse_response: BrowseResponse {
+                number_returned: 1,
+                total_matches: 1,
+                update_id: 1,
+                result: "{didl-result}".to_string(),
+            }
+        }
+    };
+    use strong_xml::{XmlWrite};
+    
+    let didl_result = didl_result
+        .to_string()
+        .unwrap()
+        .replace('<',"&lt;")
+        .replace('>',"&gt;")
+        .replace('"',"&quot;");
+    
+    response
+        .to_string()
+        .unwrap()
+        .replace("{didl-result}", &didl_result)
+}
 
 pub fn root_handler() -> BoxedFilter<(impl Reply,)> {
     warp::any()
@@ -43,55 +98,11 @@ pub fn content_handler() -> BoxedFilter<(impl Reply,)> {
             let body_vec = body.to_vec();
             let body_string = String::from_utf8_lossy(&body_vec);
 
-            log::error!("{}", action);
-            log::error!("\n{}", body_string);
+            log::info!("-----The Request Body-----\n{}\n", body_string);
+            log::info!("Action: {}", action);
 
-            let response = format!(r#"<?xml version="1.0" encoding="utf-8"?>
-            <s:Envelope
-                xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
-                <s:Body>
-                    <u:BrowseResponse
-                        xmlns:u="urn:schemas-upnp-org:service:ContentDirectory:1">
-                        <Result>
-                            &lt;DIDL-Lite
-                                xmlns:dc=&quot;http://purl.org/dc/elements/1.1/&quot;
-                                xmlns:upnp=&quot;urn:schemas-upnp-org:metadata-1-0/upnp/&quot;
-                                xmlns=&quot;urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/&quot;&gt;
-                                &lt;container id=&quot;1&quot; parentID=&quot;0&quot; childCount=&quot;2&quot; restricted=&quot;false&quot;&gt;
-                                    &lt;dc:title&gt;My Music&lt;/dc:title&gt;
-                                    &lt;upnp:class&gt;object.container.storageFolder&lt;/upnp:class&gt;
-                                    &lt;upnp:storageUsed&gt;730000&lt;/upnp:storageUsed&gt;
-                                    &lt;upnp:writeStatus&gt;WRITABLE&lt;/upnp:writeStatus&gt;
-                                    &lt;upnp:searchClass includeDerived=&quot;false&quot;&gt;object.container.album.musicAlbum&lt;/upnp:searchClass&gt;
-                                    &lt;upnp:searchClass includeDerived=&quot;false&quot;&gt;object.item.audioItem.musicTrack&lt;/upnp:searchClass&gt;
-                                    &lt;upnp:createClass includeDerived=&quot;false&quot;&gt;object.container.album.musicAlbum&lt;/upnp:createClass&gt;
-                                &lt;/container&gt;
-                                &lt;container id=&quot;2&quot; parentID=&quot;0&quot; childCount=&quot;2&quot; restricted=&quot;false&quot;&gt;
-                                    &lt;dc:title&gt;My Photos&lt;/dc:title&gt;
-                                    &lt;upnp:class&gt;object.container.storageFolder&lt;/upnp:class&gt;
-                                    &lt;upnp:storageUsed&gt;177000&lt;/upnp:storageUsed&gt;
-                                    &lt;upnp:writeStatus&gt;WRITABLE&lt;/upnp:writeStatus&gt;
-                                    &lt;upnp:searchClass includeDerived=&quot;false&quot;&gt;object.container.album.photoAlbum&lt;/upnp:searchClass&gt;
-                                    &lt;upnp:searchClass includeDerived=&quot;false&quot;&gt;object.item.imageItem.photo&lt;/upnp:searchClass&gt;
-                                    &lt;upnp:createClass includeDerived=&quot;false&quot;&gt;object.container.album.photoAlbum&lt;/upnp:createClass&gt;
-                                &lt;/container&gt;
-                                &lt;container id=&quot;30&quot; parentID=&quot;0&quot; childCount=&quot;2&quot; restricted=&quot;false&quot;&gt;
-                                    &lt;dc:title&gt;Album Art&lt;/dc:title&gt;
-                                    &lt;upnp:class&gt;object.container.storageFolder&lt;/upnp:class&gt;
-                                    &lt;upnp:storageUsed&gt;40000&lt;/upnp:storageUsed&gt;
-                                    &lt;upnp:writeStatus&gt;WRITABLE&lt;/upnp:writeStatus&gt;
-                                    &lt;upnp:searchClass name=&quot;Vendor Album Art&quot; includeDerived=&quot;true&quot;&gt;object.item.imageItem.photo.vendorAlbumArt&lt;/upnp:searchClass&gt;
-                                    &lt;upnp:createClass includeDerived=&quot;true&quot;&gt;object.item.imageItem.photo.vendorAlbumArt&lt;/upnp:createClass&gt;
-                                &lt;/container&gt;
-                            &lt;/DIDL-Lite&gt;
-                        </Result>
-                        <NumberReturned>2</NumberReturned>
-                        <TotalMatches>2</TotalMatches>
-                        <UpdateId>10</UpdateId>
-                    </u:BrowseResponse>
-                </s:Body>
-            </s:Envelope>"#);
-
+            let response = get_browse_response();
+            log::info!("-----The Response Body-----\n{}\n", response);
             response
         })
         .with(warp::reply::with::header("Content-type", "text/xml"))

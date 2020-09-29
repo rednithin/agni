@@ -6,6 +6,7 @@ use std::env;
 pub mod broadcast;
 pub mod handlers;
 pub mod types;
+pub mod util;
 
 use handlers::{
     root_handler,
@@ -20,7 +21,7 @@ async fn main() {
     
     let broadcast_presence = broadcast::get_broadcast_presence_func();
     tokio::spawn(async move {
-        let mut interval = tokio::time::interval(tokio::time::Duration::from_millis(5000));
+        let mut interval = tokio::time::interval(tokio::time::Duration::from_millis(500));
         loop {
             interval.tick().await;
             broadcast_presence();
