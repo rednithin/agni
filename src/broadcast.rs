@@ -9,7 +9,7 @@ pub fn get_broadcast_presence_func() -> impl Fn() {
     
     let ip = get_local_ip();
 
-    log::info!("PUBLIC IP {}:", ip);
+    log::info!("PUBLIC IP : {}", ip);
     
     let make_msg = |nt, usn: &str| format!("\
         NOTIFY * HTTP/1.1\r\n\
