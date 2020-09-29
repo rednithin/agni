@@ -18,4 +18,4 @@ bytes = "*"
 
 serde = { version = "*", features = [ "derive" ] }
 serde_json = "*"
-quick-xml = { version = "*", features = [ "serialize" ] }
+strong-xml = "*"

@@ -1,6 +1,5 @@
 use warp::{Filter, filters::BoxedFilter, Reply};
 use bytes::Bytes;
-use quick_xml::Reader;
 use crate::types;
     
 const ROOT_XML: &str = include_str!("root.xml");
@@ -43,7 +42,6 @@ pub fn content_handler() -> BoxedFilter<(impl Reply,)> {
 
             let body_vec = body.to_vec();
             let body_string = String::from_utf8_lossy(&body_vec);
-            let xml = Reader::from_str(&body_string);
 
             log::error!("{}", action);
             log::error!("\n{}", body_string);
