@@ -7,6 +7,7 @@ dependencies = [
  "bytes",
  "log 0.4.11",
  "lru-cache",
+ "percent-encoding",
  "pnet",
  "pretty_env_logger",
  "roxmltree",

@@ -25,3 +25,5 @@ pnet = "*"
 lru-cache = "*"
 
 roxmltree = "*"
+
+percent-encoding = "*"
