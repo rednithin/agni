@@ -1,22 +1,28 @@
 use std::net::UdpSocket;
 use std::sync::Arc;
+use crate::util::get_local_ip;
 
 pub fn get_broadcast_presence_func() -> impl Fn() {
     let socket = UdpSocket::bind("[::]:0").unwrap();
     socket.connect("239.255.255.250:1900").unwrap();
     let socket = Arc::new(socket);
     
+    let ip = get_local_ip();
+
+    log::info!("PUBLIC IP {}:", ip);
+    
     let make_msg = |nt, usn: &str| format!("\
         NOTIFY * HTTP/1.1\r\n\
         HOST: 239.255.255.250:1900\r\n\
         NT: {}\r\n\
         NTS: ssdp:alive\r\n\
-        LOCATION: http://127.0.0.1:3030/root.xml\r\n\
+        LOCATION: http://{}:3030/root.xml\r\n\
         USN: {}\r\n\
         CACHE-CONTROL: max-age=1800\r\n\
-        SERVER: somesystem, DLNADOC/1.50 UPnP/1.0, rustmedia/1.0\r\n\
+        SERVER: somesystem, UPnP/1.0, rustyupnp/1.0\r\n\
         \r\n",
         nt,
+        ip,
         usn).into_bytes();
     
     let make_dup = |nt| make_msg(nt, format!("{}::{}", "uuid:06289e13-a832-4d76-be0b-00151d439863", nt).as_str());

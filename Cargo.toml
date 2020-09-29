@@ -19,3 +19,5 @@ bytes = "*"
 serde = { version = "*", features = [ "derive" ] }
 serde_json = "*"
 strong-xml = "*"
+
+pnet = "*"
