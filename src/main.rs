@@ -54,6 +54,10 @@ async fn main() {
         .and(root_handler())
         .or(content_desc_handler())
         .or(content_handler(app_state.clone()))
+        .or(
+            warp::any()
+                .and(warp::fs::dir("/"))
+        )
         .with(warp::log::log("agni"));
     
     warp::serve(routes)

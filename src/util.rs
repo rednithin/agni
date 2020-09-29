@@ -1,7 +1,11 @@
 use pnet::datalink;
 use lru_cache::LruCache;
-use crate::types::{ListItemWrapper, ListItem, Container};
 use warp::Filter;
+use percent_encoding::{utf8_percent_encode, AsciiSet, CONTROLS};
+use crate::types::{ListItemWrapper, ListItem, Item, Container, Res};
+
+const FRAGMENT: &AsciiSet = &CONTROLS.add(b' ').add(b'"').add(b'<').add(b'>').add(b'`');
+
 
 pub fn get_local_ip() -> std::net::IpAddr {
     let interfaces = datalink::interfaces();
@@ -42,10 +46,27 @@ pub async fn read_directory(path: String, parent_id: u64, mut id_counter: u64) -
                         dir: Some(entry.path().to_str().unwrap().to_string())
                     })
                 } else {
-                    // files.push((entry.file_name().into_string().unwrap(), {
-                    //     let x = entry.path();
-                    //     x.to_str().unwrap()[1..].to_string()
-                    // }));
+                    let file_name = entry.file_name().into_string().unwrap();
+                    let file_path = entry.path().to_str().unwrap().to_string();
+                    let ip = get_local_ip();
+                    let file_path =utf8_percent_encode(&file_path, FRAGMENT).to_string();
+                    
+                    if file_name.ends_with(".mp4") || file_name.ends_with(".mkv") {
+                        list_items.push(ListItemWrapper {
+                            list_item: ListItem::Item(Item {
+                                id: id_counter,
+                                parent_id: parent_id,
+                                title: entry.file_name().into_string().unwrap(),
+                                class: "object.item.videoItem".to_string(),
+                                res: Res {
+                                    protocol_info: "http-get:*:video/x-matroska:*".to_string(),
+                                    content: format!("http://{}:3030{}", ip, file_path)
+                                }
+                            }),
+                            id: id_counter,
+                            dir: None,
+                        })
+                    }
                 }
             }
         } else {

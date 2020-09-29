@@ -120,7 +120,6 @@ pub fn content_handler(app_state: Arc<Mutex<AppState>>) -> BoxedFilter<(impl Rep
             if !executed {
                 let list_item = {
                     let locked_app_state = app_state.lock().unwrap();
-                    log::error!("{:?}", locked_app_state.item_map);
                     locked_app_state.item_map.get(&object_id).unwrap().clone()
                 };
                 let id_counter = {
@@ -142,13 +141,15 @@ pub fn content_handler(app_state: Arc<Mutex<AppState>>) -> BoxedFilter<(impl Rep
                 response = Some(get_browse_response(&list_items));
             }
 
+            let response = response.unwrap();
+
             log::info!("-----The Request Body-----\n{}\n", body_string);
             log::info!("Action: {}", action);
             log::info!("ObjectID: {}", object_id);
-
+            log::info!("-----The Response Body-----\n{}\n", response);
             
             // log::info!("-----The Response Body-----\n{}\n", response);
-            Ok(response.unwrap())
+            Ok(response)
         })
         .with(warp::reply::with::header("Content-type", "text/xml"))
         .boxed()
