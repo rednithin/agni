@@ -13,7 +13,7 @@ warp = "0.2"
 log = "0.4"
 pretty_env_logger = "0.4"
 
-uuid = "*"
+uuid = {version = "*", features=["v4"]}
 bytes = "*"
 
 serde = { version = "*", features = [ "derive" ] }
