@@ -1,13 +1,15 @@
 use std::net::UdpSocket;
 use std::sync::Arc;
 use crate::util::get_local_ip;
+use uuid::Uuid;
 
-pub fn get_broadcast_presence_func() -> impl Fn() {
+pub fn get_broadcast_presence_func(uuid: Uuid) -> impl Fn() {
     let socket = UdpSocket::bind("[::]:0").unwrap();
     socket.connect("239.255.255.250:1900").unwrap();
     let socket = Arc::new(socket);
     
     let ip = get_local_ip();
+    let uuid_urn = format!("uuid:{}", uuid);
 
     log::info!("PUBLIC IP : {}", ip);
     
@@ -25,13 +27,13 @@ pub fn get_broadcast_presence_func() -> impl Fn() {
         ip,
         usn).into_bytes();
     
-    let make_dup = |nt| make_msg(nt, format!("{}::{}", "uuid:06289e13-a832-4d76-be0b-00151d439863", nt).as_str());
+    let make_dup = |nt| make_msg(nt, format!("{}::{}", uuid_urn, nt).as_str());
     
     let msg_root = make_dup("upnp:rootdevice");
     let msg_mediaserver = make_dup("urn:schemas-upnp-org:device:MediaServer:1");
     let msg_contentdir = make_dup("urn:schemas-upnp-org:service:ContentDirectory:1");
     let msg_connectionmanager = make_dup("urn:schemas-upnp-org:service:ConnectionManager:1");
-    let msg_uuid = make_msg("uuid:06289e13-a832-4d76-be0b-00151d439863", "uuid:06289e13-a832-4d76-be0b-00151d439863");
+    let msg_uuid = make_msg(&uuid_urn, &uuid_urn);
     
     let broadcast_message = move |desc, data: &[u8]| {
         socket

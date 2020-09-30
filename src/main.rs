@@ -4,6 +4,7 @@ use pretty_env_logger;
 use std::env;
 use std::sync::{Arc,Mutex};
 use std::collections::HashMap;
+use uuid::{Uuid};
 
 pub mod broadcast;
 pub mod handlers;
@@ -13,19 +14,22 @@ pub mod util;
 use handlers::{
     root_handler,
     content_desc_handler,
-    content_handler
+    content_handler,
+    serve_directories,
 };
 
 use types::AppState;
 
-use util::{get_cache};
+use util::get_cache;
 
 #[tokio::main]
 async fn main() {
     env::set_var("RUST_LOG","info");
     pretty_env_logger::init();
+
+    let uuid = Uuid::new_v4();
     
-    let broadcast_presence = broadcast::get_broadcast_presence_func();
+    let broadcast_presence = broadcast::get_broadcast_presence_func(uuid.clone());
     tokio::spawn(async move {
         let mut interval = tokio::time::interval(tokio::time::Duration::from_millis(5000));
         loop {
@@ -43,21 +47,20 @@ async fn main() {
     }
     
     let id_counter = (cache.get_mut(&0).unwrap().len() + 1) as u64;
+
     let app_state = AppState {
         cache,
         id_counter,
-        item_map
+        item_map,
+        uuid,
     };
     let app_state = Arc::new(Mutex::new(app_state));
    
     let routes = warp::any()
-        .and(root_handler())
+        .and(root_handler(uuid.clone()))
         .or(content_desc_handler())
         .or(content_handler(app_state.clone()))
-        .or(
-            warp::any()
-                .and(warp::fs::dir("/"))
-        )
+        .or(serve_directories())
         .with(warp::log::log("agni"));
     
     warp::serve(routes)

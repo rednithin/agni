@@ -75,6 +75,15 @@ pub async fn read_directory(path: String, parent_id: u64, mut id_counter: u64) -
         id_counter += 1;
     }
 
+    list_items.sort_by(|a, b| {
+        let compute_string = |list_item_wrapper: &ListItemWrapper| {
+            match list_item_wrapper.list_item.clone() {
+                ListItem::Container(x) => format!("D{}", x.title),
+                ListItem::Item(x) => format!("F{}", x.title),
+            }
+        };
+        compute_string(a).cmp(&compute_string(b))
+    });
     ReadDirectoryReturnType {
         list_items,
         id_counter

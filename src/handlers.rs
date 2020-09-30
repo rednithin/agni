@@ -1,5 +1,7 @@
 use warp::{Filter, filters::BoxedFilter, Reply};
 use bytes::Bytes;
+use log;
+use uuid::Uuid;
 use std::sync::{Arc,Mutex};
 use crate::types::{
     Envelope,
@@ -57,14 +59,15 @@ fn get_browse_response(list_items: &Vec<ListItemWrapper>) -> String {
         .replace("{didl-result}", &didl_result)
 }
 
-pub fn root_handler() -> BoxedFilter<(impl Reply,)> {
+pub fn root_handler(uuid: Uuid) -> BoxedFilter<(impl Reply,)> {
+    let uuid_string = uuid.to_string();
     warp::any()
         .and(warp::get())
         .and(warp::path!("root.xml"))
-        .map(|| {
+        .map(move || {
             ROOT_XML
                 .replace("{name}", "Rednithin")
-                .replace("{uuid}", "06289e13-a832-4d76-be0b-00151d439863")
+                .replace("{uuid}", &uuid_string.clone())
         })
         .with(warp::reply::with::header("Content-type", "text/xml"))
         .boxed()
@@ -148,9 +151,14 @@ pub fn content_handler(app_state: Arc<Mutex<AppState>>) -> BoxedFilter<(impl Rep
             log::info!("ObjectID: {}", object_id);
             log::info!("-----The Response Body-----\n{}\n", response);
             
-            // log::info!("-----The Response Body-----\n{}\n", response);
             Ok(response)
         })
         .with(warp::reply::with::header("Content-type", "text/xml"))
+        .boxed()
+}
+
+pub fn serve_directories() -> BoxedFilter<(impl Reply,)> {
+    warp::any()
+        .and(warp::fs::dir("/"))
         .boxed()
 }

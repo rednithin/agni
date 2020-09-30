@@ -1,6 +1,7 @@
 use strong_xml::{XmlRead, XmlWrite};
 use lru_cache::LruCache;
 use std::collections::HashMap;
+use uuid::Uuid;
 
 pub const XMLNS_ENVELOPE: &str = "http://schemas.xmlsoap.org/soap/envelope/";
 pub const ENVELOPE_ENCODING_STYLE: &str = "http://schemas.xmlsoap.org/soap/encoding/";
@@ -112,4 +113,5 @@ pub struct AppState {
     pub cache: LruCache<u64,Vec<ListItemWrapper>>,
     pub item_map: HashMap<u64,ListItemWrapper>,
     pub id_counter: u64,
+    pub uuid: Uuid,
 }
