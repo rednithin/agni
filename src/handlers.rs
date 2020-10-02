@@ -154,6 +154,7 @@ pub fn content_handler(app_state: Arc<Mutex<AppState>>) -> BoxedFilter<(impl Rep
             Ok(response)
         })
         .with(warp::reply::with::header("Content-type", "text/xml"))
+        .with(warp::log::log("@agni/content-directory"))
         .boxed()
 }
 

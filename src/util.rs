@@ -4,7 +4,14 @@ use warp::Filter;
 use percent_encoding::{utf8_percent_encode, AsciiSet, CONTROLS};
 use crate::types::{ListItemWrapper, ListItem, Item, Container, Res};
 
-const FRAGMENT: &AsciiSet = &CONTROLS.add(b' ').add(b'"').add(b'<').add(b'>').add(b'`');
+const FRAGMENT: &AsciiSet = &CONTROLS
+    .add(b' ')
+    .add(b'"')
+    .add(b'<')
+    .add(b'>')
+    .add(b'`')
+    .add(b'[')
+    .add(b']');
 
 
 pub fn get_local_ip() -> std::net::IpAddr {
@@ -100,7 +107,7 @@ pub fn get_cache() -> LruCache<u64,Vec<ListItemWrapper>> {
             class: "object.container.storageFolder".to_string(),
         }),
         id: 1,
-        dir: Some("/home/nithin/Server".into())
+        dir: Some("/mnt/Documents".into())
     }];
 
     for (i, x) in initial_list_items.iter_mut().enumerate() {

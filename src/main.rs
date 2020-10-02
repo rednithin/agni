@@ -31,7 +31,7 @@ async fn main() {
     
     let broadcast_presence = broadcast::get_broadcast_presence_func(uuid.clone());
     tokio::spawn(async move {
-        let mut interval = tokio::time::interval(tokio::time::Duration::from_millis(5000));
+        let mut interval = tokio::time::interval(tokio::time::Duration::from_millis(100));
         loop {
             interval.tick().await;
             broadcast_presence();
@@ -60,8 +60,7 @@ async fn main() {
         .and(root_handler(uuid.clone()))
         .or(content_desc_handler())
         .or(content_handler(app_state.clone()))
-        .or(serve_directories())
-        .with(warp::log::log("agni"));
+        .or(serve_directories());
     
     warp::serve(routes)
         .run(([0, 0, 0, 0], 3030))
