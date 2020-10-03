@@ -31,7 +31,7 @@ async fn main() {
     
     let broadcast_presence = broadcast::get_broadcast_presence_func(uuid.clone());
     tokio::spawn(async move {
-        let mut interval = tokio::time::interval(tokio::time::Duration::from_millis(100));
+        let mut interval = tokio::time::interval(tokio::time::Duration::from_millis(1000));
         loop {
             interval.tick().await;
             broadcast_presence();
