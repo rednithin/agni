@@ -47,7 +47,7 @@ pub fn get_broadcast_presence_func(uuid: Uuid) -> impl Fn() {
     
     let broadcast_presence = move || {
         // println!("Broadcasted");
-        for _ in 0..1 {
+        for _ in 0..3 {
             broadcast_message("uuid", &msg_uuid).unwrap();
             broadcast_message("root", &msg_root).unwrap();
             broadcast_message("mediaserver", &msg_mediaserver).unwrap();
