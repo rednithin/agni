@@ -1,7 +1,7 @@
-use warp::{Filter, filters::BoxedFilter, Reply};
+use actix_web::{get, post, web, HttpResponse, HttpRequest, Responder, Result as ActixResult};
 use bytes::Bytes;
 use log;
-use uuid::Uuid;
+use actix_files::NamedFile;
 use std::sync::{Arc,Mutex};
 use crate::types::{
     Envelope,
@@ -17,7 +17,7 @@ use crate::types::{
     XMLNS_ENVELOPE,
     XMLNS_CONTENT_DIRECTORY,
 };
-use crate::util::{with_cloneable,read_directory};
+use crate::util::{read_directory};
     
 
 const ROOT_XML: &str = include_str!("root.xml");
@@ -59,42 +59,30 @@ fn get_browse_response(list_items: &Vec<ListItemWrapper>) -> String {
         .replace("{didl-result}", &didl_result)
 }
 
-pub fn root_handler(uuid: Uuid) -> BoxedFilter<(impl Reply,)> {
-    let uuid_string = uuid.to_string();
-    warp::any()
-        .and(warp::get())
-        .and(warp::path!("root.xml"))
-        .map(move || {
-            ROOT_XML
-                .replace("{name}", "Rednithin")
-                .replace("{uuid}", &uuid_string.clone())
-        })
-        .with(warp::reply::with::header("Content-type", "text/xml"))
-        .boxed()
+#[get("/root.xml")]
+async fn root_handler(app_state: web::Data<Arc<Mutex<AppState>>>) -> impl Responder {
+    let uuid_string = app_state.lock().unwrap().uuid.clone().to_string();
+    let body = ROOT_XML
+                .replace("{name}", "Actix-Rednithin")
+                .replace("{uuid}", &uuid_string.clone());
+    HttpResponse::Ok().content_type("text/xml").body(body)
 }
 
-pub fn content_desc_handler() -> BoxedFilter<(impl Reply,)> {
-    warp::any()
-        .and(warp::get())
-        .and(warp::path!("content" / "desc.xml"))
-        .map(|| CONTENT_DESC_XML)
-        .boxed()
+#[get("/content/desc.xml")]
+async fn content_desc_handler() -> impl Responder {
+    HttpResponse::Ok().content_type("text/xml").body(CONTENT_DESC_XML)
 }
 
-pub fn content_handler(app_state: Arc<Mutex<AppState>>) -> BoxedFilter<(impl Reply,)> {
-    warp::any()
-        .and(warp::post())
-        .and(warp::path!("content" / "control"))
-        .and(with_cloneable(app_state))
-        .and(warp::header::<String>(SOAP_ACTION))
-        .and(warp::body::bytes())
-        .and_then(|app_state: Arc<Mutex<AppState>>, soap_action_header: String, body: Bytes| async move {
+#[post("/content/control")]
+async fn content_handler(app_state: web::Data<Arc<Mutex<AppState>>>, bytes: Bytes, req: HttpRequest) -> HttpResponse {
+            
+            let soap_action_header = req.headers().get(SOAP_ACTION).unwrap().to_str().unwrap().to_string();
             let action = match soap_action_header.trim_matches('"').split("#").collect::<Vec<&str>>().get(1) {
                 Some(&x) => x,
-                _ => "Error"
+                _ => ""
             };
 
-            let body_vec = body.to_vec();
+            let body_vec = bytes.to_vec();
             let body_string = String::from_utf8_lossy(&body_vec);
 
             let xml_doc = roxmltree::Document::parse(&body_string).unwrap();
@@ -106,7 +94,7 @@ pub fn content_handler(app_state: Arc<Mutex<AppState>>) -> BoxedFilter<(impl Rep
             };
 
             if object_id == std::u64::MAX {
-                return Err(warp::reject::not_found());
+                return HttpResponse::NotFound().body("Lol");
             }
 
             let mut response: Option<String> = None;
@@ -151,15 +139,18 @@ pub fn content_handler(app_state: Arc<Mutex<AppState>>) -> BoxedFilter<(impl Rep
             log::info!("ObjectID: {}", object_id);
             log::info!("-----The Response Body-----\n{}\n", response);
             
-            Ok(response)
-        })
-        .with(warp::reply::with::header("Content-type", "text/xml"))
-        .with(warp::log::log("@agni/content-directory"))
-        .boxed()
+            HttpResponse::Ok().content_type("text/xml").body(response)
 }
 
-pub fn serve_directories() -> BoxedFilter<(impl Reply,)> {
-    warp::any()
-        .and(warp::fs::dir("/"))
-        .boxed()
+#[get("/agni-files{filename:.*}")]
+async fn serve_directories(req: HttpRequest) -> ActixResult<NamedFile> {
+    let path: std::path::PathBuf = req.match_info().query("filename").parse().unwrap();
+    Ok(NamedFile::open(path)?)
+}
+
+pub fn config(cfg: &mut web::ServiceConfig)  {
+    cfg.service(root_handler);
+    cfg.service(content_desc_handler);
+    cfg.service(content_handler);
+    cfg.service(serve_directories);
 }

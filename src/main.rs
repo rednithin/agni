@@ -1,4 +1,4 @@
-use warp::{self, Filter};
+use actix_web::{App, HttpServer,};
 use tokio;
 use pretty_env_logger;
 use std::env;
@@ -11,19 +11,14 @@ pub mod handlers;
 pub mod types;
 pub mod util;
 
-use handlers::{
-    root_handler,
-    content_desc_handler,
-    content_handler,
-    serve_directories,
-};
+use handlers::config;
 
 use types::AppState;
 
 use util::get_cache;
 
-#[tokio::main]
-async fn main() {
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
     env::set_var("RUST_LOG","info");
     pretty_env_logger::init();
 
@@ -56,13 +51,12 @@ async fn main() {
     };
     let app_state = Arc::new(Mutex::new(app_state));
    
-    let routes = warp::any()
-        .and(root_handler(uuid.clone()))
-        .or(content_desc_handler())
-        .or(content_handler(app_state.clone()))
-        .or(serve_directories());
-    
-    warp::serve(routes)
-        .run(([0, 0, 0, 0], 3030))
-        .await;
+    HttpServer::new(move || {
+            App::new()
+                .data(app_state.clone())
+                .configure(config)
+        })
+        .bind("0.0.0.0:3030")?
+        .run()
+        .await
 }

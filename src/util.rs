@@ -1,6 +1,5 @@
 use pnet::datalink;
 use lru_cache::LruCache;
-use warp::Filter;
 use percent_encoding::{utf8_percent_encode, AsciiSet, CONTROLS};
 use crate::types::{ListItemWrapper, ListItem, Item, Container, Res};
 
@@ -67,7 +66,7 @@ pub async fn read_directory(path: String, parent_id: u64, mut id_counter: u64) -
                                 class: "object.item.videoItem".to_string(),
                                 res: Res {
                                     protocol_info: "http-get:*:video/x-matroska:*".to_string(),
-                                    content: format!("http://{}:3030{}", ip, file_path)
+                                    content: format!("http://{}:3030/agni-files/{}", ip, file_path)
                                 }
                             }),
                             id: id_counter,
@@ -107,7 +106,7 @@ pub fn get_cache() -> LruCache<u64,Vec<ListItemWrapper>> {
             class: "object.container.storageFolder".to_string(),
         }),
         id: 1,
-        dir: Some("/mnt/Documents".into())
+        dir: Some("/home/nithin/Server".into())
     }];
 
     for (i, x) in initial_list_items.iter_mut().enumerate() {
@@ -124,10 +123,4 @@ pub fn get_cache() -> LruCache<u64,Vec<ListItemWrapper>> {
     cache.insert(0, initial_list_items);
 
     cache
-}
-
-pub fn with_cloneable<T: Clone + std::marker::Send>(
-    t: T,
-) -> impl Filter<Extract = (T,), Error = std::convert::Infallible> + Clone {
-    warp::any().map(move || t.clone())
 }
