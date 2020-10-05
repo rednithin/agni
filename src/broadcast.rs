@@ -21,7 +21,7 @@ pub fn get_broadcast_presence_func(uuid: Uuid) -> impl Fn() {
         LOCATION: http://{}:3030/root.xml\r\n\
         USN: {}\r\n\
         CACHE-CONTROL: max-age=1800\r\n\
-        SERVER: somesystem, UPnP/1.0, rustyupnp/1.0\r\n\
+        SERVER: somesystem, UPnP/1.0, agni/1.0\r\n\
         \r\n",
         nt,
         ip,
