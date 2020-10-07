@@ -28,3 +28,5 @@ lru-cache = "*"
 roxmltree = "*"
 
 percent-encoding = "*"
+
+regex="*"

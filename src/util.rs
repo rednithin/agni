@@ -1,6 +1,9 @@
 use pnet::datalink;
 use lru_cache::LruCache;
 use percent_encoding::{utf8_percent_encode, AsciiSet, CONTROLS};
+use regex::Regex;
+use std::cmp::Ordering;
+
 use crate::types::{ListItemWrapper, ListItem, Item, Container, Res};
 
 const FRAGMENT: &AsciiSet = &CONTROLS
@@ -11,6 +14,63 @@ const FRAGMENT: &AsciiSet = &CONTROLS
     .add(b'`')
     .add(b'[')
     .add(b']');
+
+pub fn natural_order_strings(first_string: String, second_string: String) -> Ordering {
+    let regex = Regex::new("[^0-9]+|[0-9]+").unwrap();
+    let tokens1: Vec<String> = regex.captures_iter(&first_string)
+        .map(|c| 
+            c
+                .get(0)
+                .unwrap()
+                .as_str()
+                .to_lowercase()
+                .to_owned()
+        )
+        .collect();
+    println!("{:?}", tokens1);
+
+    let tokens2: Vec<String> = regex.captures_iter(&second_string)
+        .map(|c| 
+            c
+                .get(0)
+                .unwrap()
+                .as_str()
+                .to_lowercase()
+                .to_owned()
+        )
+        .collect();
+    println!("{:?}", tokens2);
+
+    let (longer, shorter, is_first_longer) = if tokens1.len() > tokens2.len() {
+        (tokens1, tokens2, true)
+    } else {
+        (tokens1, tokens2, true)
+    };
+
+    for (a, b) in  longer.iter().zip(shorter.iter()) {
+        let cmp = if let (Ok(x), Ok(y)) = (a.parse::<u128>(), b.parse::<u128>()) {
+            x.cmp(&y)
+        } else {
+            a.cmp(b)
+        };
+        if cmp != Ordering::Equal {
+            if is_first_longer {
+                return cmp;
+            } else {
+                return match cmp {
+                    Ordering::Greater => Ordering::Less,
+                    Ordering::Less => Ordering::Greater,
+                    Ordering::Equal => Ordering::Equal
+                }
+            }
+        }
+    };
+    if is_first_longer {
+        Ordering::Greater
+    } else {
+        Ordering::Less
+    }
+}
 
 
 pub fn get_local_ip() -> std::net::IpAddr {
@@ -88,7 +148,7 @@ pub async fn read_directory(path: String, parent_id: u64, mut id_counter: u64) -
                 ListItem::Item(x) => format!("F{}", x.title),
             }
         };
-        compute_string(a).cmp(&compute_string(b))
+        natural_order_strings(compute_string(a),compute_string(b))
     });
     ReadDirectoryReturnType {
         list_items,

@@ -309,6 +309,7 @@ dependencies = [
  "percent-encoding",
  "pnet",
  "pretty_env_logger",
+ "regex",
  "roxmltree",
  "serde",
  "serde_json",
