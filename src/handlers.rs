@@ -75,7 +75,7 @@ async fn content_desc_handler() -> impl Responder {
 
 #[post("/content/control")]
 async fn content_handler(app_state: web::Data<Arc<Mutex<AppState>>>, bytes: Bytes, req: HttpRequest) -> HttpResponse {
-            
+            let hostname = req.connection_info().host().to_owned();
             let soap_action_header = req.headers().get(SOAP_ACTION).unwrap().to_str().unwrap().to_string();
             let action = match soap_action_header.trim_matches('"').split("#").collect::<Vec<&str>>().get(1) {
                 Some(&x) => x,
@@ -117,7 +117,7 @@ async fn content_handler(app_state: web::Data<Arc<Mutex<AppState>>>, bytes: Byte
                     let locked_app_state = app_state.lock().unwrap();
                     locked_app_state.id_counter
                 };
-                let x = read_directory(list_item.dir.clone().unwrap(), object_id, id_counter).await;
+                let x = read_directory(hostname, list_item.dir.clone().unwrap(), object_id, id_counter).await;
                 let list_items= x.list_items;
                 {
                     let mut locked_app_state = app_state.lock().unwrap();
@@ -127,8 +127,8 @@ async fn content_handler(app_state: web::Data<Arc<Mutex<AppState>>>, bytes: Byte
                     let mut locked_app_state = app_state.lock().unwrap();
                     locked_app_state.item_map.insert(item.id, item.clone());
                 }
-                let mut locked_app_state = app_state.lock().unwrap();
-                locked_app_state.cache.insert(object_id, list_items.clone());
+                // let mut locked_app_state = app_state.lock().unwrap();
+                // locked_app_state.cache.insert(object_id, list_items.clone());
                 response = Some(get_browse_response(&list_items));
             }
 

@@ -73,7 +73,7 @@ pub fn natural_order_strings(first_string: String, second_string: String) -> Ord
 }
 
 
-pub fn get_local_ip() -> std::net::IpAddr {
+pub fn get_local_ip() -> Vec<std::net::IpAddr> {
     let interfaces = datalink::interfaces();
     let location = interfaces
         .iter()
@@ -84,7 +84,7 @@ pub fn get_local_ip() -> std::net::IpAddr {
         }
     ).unwrap();
     
-    location.ips[0].ip()
+    location.ips.iter().map(|x| x.ip()).collect()
 }
 
 pub struct ReadDirectoryReturnType {
@@ -92,7 +92,7 @@ pub struct ReadDirectoryReturnType {
     pub id_counter: u64
 }
 
-pub async fn read_directory(path: String, parent_id: u64, mut id_counter: u64) -> ReadDirectoryReturnType {
+pub async fn read_directory(hostname: String, path: String, parent_id: u64, mut id_counter: u64) -> ReadDirectoryReturnType {
     let mut entries = tokio::fs::read_dir(&path).await.unwrap();
 
     let mut list_items = vec![];
@@ -114,7 +114,6 @@ pub async fn read_directory(path: String, parent_id: u64, mut id_counter: u64) -
                 } else {
                     let file_name = entry.file_name().into_string().unwrap();
                     let file_path = entry.path().to_str().unwrap().to_string();
-                    let ip = get_local_ip();
                     let file_path =utf8_percent_encode(&file_path, FRAGMENT).to_string();
                     
                     if file_name.ends_with(".mp4") || file_name.ends_with(".mkv") {
@@ -126,7 +125,7 @@ pub async fn read_directory(path: String, parent_id: u64, mut id_counter: u64) -
                                 class: "object.item.videoItem".to_string(),
                                 res: Res {
                                     protocol_info: "http-get:*:video/x-matroska:*".to_string(),
-                                    content: format!("http://{}:3030/agni-files/{}", ip, file_path)
+                                    content: format!("http://{}/agni-files/{}", hostname, file_path)
                                 }
                             }),
                             id: id_counter,
