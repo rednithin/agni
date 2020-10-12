@@ -7,6 +7,10 @@ use std::net::IpAddr;
 pub fn get_broadcast_presence_func(uuid: Uuid) -> impl Fn() {
     let socket = UdpSocket::bind("[::]:0").unwrap();
     socket.connect("239.255.255.250:1900").unwrap();
+    // socket.connect("[FF02::C]:1900").unwrap();
+    // socket.connect("[FF05::C]:1900").unwrap();
+    // socket.connect("[FF08::C]:1900").unwrap();
+    // socket.connect("[FF0E::C]:1900").unwrap();
     let socket = Arc::new(socket);
     
     
@@ -48,7 +52,7 @@ pub fn get_broadcast_presence_func(uuid: Uuid) -> impl Fn() {
         let ips = get_local_ip();
         let uuid_urn = format!("uuid:{}", uuid);
 
-        log::info!("PUBLIC IP : {:#?}", ips);
+        // log::info!("PUBLIC IP : {:#?}", ips);
 
         for ip in ips {
             for _ in 0..3 {

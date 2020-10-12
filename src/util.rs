@@ -3,6 +3,7 @@ use lru_cache::LruCache;
 use percent_encoding::{utf8_percent_encode, AsciiSet, CONTROLS};
 use regex::Regex;
 use std::cmp::Ordering;
+use std::net::IpAddr;
 
 use crate::types::{ListItemWrapper, ListItem, Item, Container, Res};
 
@@ -73,18 +74,22 @@ pub fn natural_order_strings(first_string: String, second_string: String) -> Ord
 }
 
 
-pub fn get_local_ip() -> Vec<std::net::IpAddr> {
+pub fn get_local_ip() -> Vec<IpAddr> {
     let interfaces = datalink::interfaces();
-    let location = interfaces
+    let locations = interfaces
         .iter()
-        .find(|&x| {
+        .filter(|&x| {
             // let s = format!("{}", x);
             // s.contains("192.168")
-            x.is_broadcast() && x.is_multicast()
+           x.is_multicast()
         }
-    ).unwrap();
+    )
+        .map(|location| location.ips.iter().map(|x| x.ip()))
+        .flatten()
+        .collect();
     
-    location.ips.iter().map(|x| x.ip()).collect()
+    locations
+    // location.ips.iter().map(|x| x.ip()).collect()
 }
 
 pub struct ReadDirectoryReturnType {
