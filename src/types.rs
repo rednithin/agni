@@ -3,15 +3,18 @@ use std::collections::HashMap;
 use strong_xml::{XmlRead, XmlWrite};
 use uuid::Uuid;
 
-pub const XMLNS_ENVELOPE: &str = "http://schemas.xmlsoap.org/soap/envelope/";
+pub const ENVELOPE_XMLNS: &str = "urn:schemas-upnp-org:service-1-0";
+pub const ENVELOPE_XMLNS_S: &str = "http://schemas.xmlsoap.org/soap/envelope/";
 pub const ENVELOPE_ENCODING_STYLE: &str = "http://schemas.xmlsoap.org/soap/encoding/";
-pub const XMLNS_CONTENT_DIRECTORY: &str = "urn:schemas-upnp-org:service:ContentDirectory:1";
+pub const CONTENT_DIRECTORY_XMLNS: &str = "urn:schemas-upnp-org:service:ContentDirectory:1";
 
 #[derive(XmlWrite, XmlRead, PartialEq, Debug, Clone)]
 #[xml(tag = "s:Envelope")]
 pub struct Envelope {
-    #[xml(attr = "xmlns:s")]
+    #[xml(attr = "xmlns")]
     pub xmlns: String,
+    #[xml(attr = "xmlns:s")]
+    pub xmlns_s: String,
     #[xml(attr = "s:encodingStyle")]
     pub encoding_style: String,
     #[xml(child = "s:Body")]
@@ -23,13 +26,13 @@ pub struct Envelope {
 pub struct Body {
     #[xml(child = "u:BrowseResponse")]
     pub browse_response: BrowseResponse,
-    #[xml(attr = "xmlns:s")]
-    pub xmlns: String,
 }
 
 #[derive(XmlWrite, XmlRead, PartialEq, Debug, Clone)]
 #[xml(tag = "u:BrowseResponse")]
 pub struct BrowseResponse {
+    #[xml(attr = "xmlns:u")]
+    pub xmlns_u: String,
     #[xml(flatten_text = "Result")]
     pub result: String,
     #[xml(flatten_text = "NumberReturned")]

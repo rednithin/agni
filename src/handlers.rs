@@ -1,6 +1,6 @@
 use crate::types::{
-    AppState, Body, BrowseResponse, DidlLite, Envelope, ListItemWrapper, ENVELOPE_ENCODING_STYLE,
-    XMLNS_CONTENT_DIRECTORY, XMLNS_DC, XMLNS_DIDL, XMLNS_ENVELOPE, XMLNS_UPNP,
+    AppState, Body, BrowseResponse, DidlLite, Envelope, ListItemWrapper, CONTENT_DIRECTORY_XMLNS,
+    ENVELOPE_ENCODING_STYLE, ENVELOPE_XMLNS, ENVELOPE_XMLNS_S, XMLNS_DC, XMLNS_DIDL, XMLNS_UPNP,
 };
 use crate::util::read_directory;
 use actix_files::NamedFile;
@@ -23,10 +23,11 @@ fn get_browse_response(list_items: &Vec<ListItemWrapper>) -> String {
     };
     let response = Envelope {
         encoding_style: ENVELOPE_ENCODING_STYLE.to_string(),
-        xmlns: XMLNS_ENVELOPE.to_string(),
+        xmlns: ENVELOPE_XMLNS.to_string(),
+        xmlns_s: ENVELOPE_XMLNS_S.to_string(),
         body: Body {
-            xmlns: XMLNS_CONTENT_DIRECTORY.to_string(),
             browse_response: BrowseResponse {
+                xmlns_u: CONTENT_DIRECTORY_XMLNS.to_string(),
                 number_returned: 1,
                 total_matches: 1,
                 update_id: 1,
@@ -149,6 +150,8 @@ async fn content_handler(
     }
 
     let response = response.unwrap();
+    let response = r#"<?xml version="1.0" encoding="UTF-8"?>
+    "#.to_string() + &response;
 
     log::info!("-----The Request Body-----\n{}\n", body_string);
     log::info!("Action: {}", action);
@@ -166,16 +169,14 @@ async fn connection_desc_handler() -> impl Responder {
 }
 
 #[post("/connection/control")]
-async fn connection_handler(
-    bytes: Bytes,
-) -> HttpResponse {
+async fn connection_handler(bytes: Bytes) -> HttpResponse {
     println!("{}", String::from_utf8_lossy(&bytes.to_vec()));
     let response = r#"<?xml version="1.0" encoding="UTF-8"?>
 <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" xmlns="urn:schemas-upnp-org:service-1-0" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
    <s:Body>
       <u:GetProtocolInfoResponse xmlns:u="urn:schemas-upnp-org:service:ConnectionManager:1">
-         <Source />
-         <Sink />
+         <Source></Source>
+         <Sink></Sink>
       </u:GetProtocolInfoResponse>
    </s:Body>
 </s:Envelope>
