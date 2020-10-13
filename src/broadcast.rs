@@ -10,6 +10,7 @@ pub async fn broadcast_message<'a>(desc: &'a str, data: &'a [u8], unicast_ip: &O
     } else {
         "239.255.255.250:1900".to_string()
     };
+    println!("To Address: {:?}\nMessage:\n {:?}\n", addr, String::from_utf8_lossy(data));
     socket
         .send_to(data, addr)
         .await
@@ -80,8 +81,8 @@ pub async fn listen_to_discover_messages(uuid: Uuid) {
             Ok((received, addr))=> {
                 let s = String::from_utf8_lossy(&buf[..received]);
                 if s.contains("M-SEARCH") &&  s.contains("ssdp:discover") && s.contains("ContentDirectory")  {
+                    println!("From Address: {:?}\nMessage:\n {:?}\n", addr.to_string(), s);
                     broadcast_presence(uuid.clone(), Some(addr.to_string())).await;
-                    println!("received from {:?}\nMessage:\n {:?}\n", addr, s)
                 }
             },
             Err(e) => println!("recv function failed: {:?}", e),
