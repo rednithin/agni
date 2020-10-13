@@ -1,6 +1,6 @@
-use strong_xml::{XmlRead, XmlWrite};
 use lru_cache::LruCache;
 use std::collections::HashMap;
+use strong_xml::{XmlRead, XmlWrite};
 use uuid::Uuid;
 
 pub const XMLNS_ENVELOPE: &str = "http://schemas.xmlsoap.org/soap/envelope/";
@@ -53,8 +53,8 @@ pub struct DidlLite {
     pub xmlns_upnp: String,
     #[xml(attr = "xmlns")]
     pub xmlns: String,
-    #[xml(child = "container", child="item")]
-    pub list_items: Vec<ListItem>
+    #[xml(child = "container", child = "item")]
+    pub list_items: Vec<ListItem>,
 }
 
 #[derive(XmlWrite, XmlRead, PartialEq, Debug, Clone)]
@@ -69,7 +69,7 @@ pub enum ListItem {
 pub struct ListItemWrapper {
     pub list_item: ListItem,
     pub id: u64,
-    pub dir: Option<String>
+    pub dir: Option<String>,
 }
 
 #[derive(XmlWrite, XmlRead, PartialEq, Debug, Clone)]
@@ -110,8 +110,8 @@ pub struct Res {
 }
 
 pub struct AppState {
-    pub cache: LruCache<u64,Vec<ListItemWrapper>>,
-    pub item_map: HashMap<u64,ListItemWrapper>,
+    pub cache: LruCache<u64, Vec<ListItemWrapper>>,
+    pub item_map: HashMap<u64, ListItemWrapper>,
     pub id_counter: u64,
     pub uuid: Uuid,
 }
