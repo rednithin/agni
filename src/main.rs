@@ -24,17 +24,16 @@ async fn main() -> std::io::Result<()> {
 
     let uuid = Uuid::new_v4();
     
-    let broadcast_presence = broadcast::get_broadcast_presence_func(uuid.clone(), None);
     let handle1 = tokio::spawn(async move {
         let mut interval = tokio::time::interval(tokio::time::Duration::from_millis(2000));
         loop {
             interval.tick().await;
-            broadcast_presence();
+            broadcast::broadcast_presence(uuid.clone(), None).await;
         }
     });
 
-    let handle2 = tokio::task::spawn_blocking(move || {
-        broadcast::listen_to_discover_messages(uuid.clone());
+    let handle2 = tokio::spawn(async move {
+        broadcast::listen_to_discover_messages(uuid.clone()).await;
     });
 
 
