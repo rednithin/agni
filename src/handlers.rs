@@ -165,6 +165,24 @@ async fn connection_desc_handler() -> impl Responder {
         .body(CONNECTION_DESC_XML)
 }
 
+#[post("/connection/control")]
+async fn connection_handler(
+    bytes: Bytes,
+) -> HttpResponse {
+    println!("{}", String::from_utf8_lossy(&bytes.to_vec()));
+    let response = r#"<?xml version="1.0" encoding="UTF-8"?>
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" xmlns="urn:schemas-upnp-org:service-1-0" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+   <s:Body>
+      <u:GetProtocolInfoResponse xmlns:u="urn:schemas-upnp-org:service:ConnectionManager:1">
+         <Source />
+         <Sink />
+      </u:GetProtocolInfoResponse>
+   </s:Body>
+</s:Envelope>
+"#;
+    HttpResponse::Ok().content_type("text/xml").body(response)
+}
+
 #[get("/agni-files{filename:.*}")]
 async fn serve_directories(req: HttpRequest) -> ActixResult<NamedFile> {
     let path: std::path::PathBuf = req.match_info().query("filename").parse().unwrap();
@@ -176,5 +194,6 @@ pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.service(content_desc_handler);
     cfg.service(content_handler);
     cfg.service(connection_desc_handler);
+    cfg.service(connection_handler);
     cfg.service(serve_directories);
 }
