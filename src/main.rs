@@ -1,4 +1,4 @@
-use actix_web::{App, HttpServer,};
+use actix_web::{App, HttpServer,middleware::Logger};
 use tokio;
 use pretty_env_logger;
 use std::env;
@@ -57,6 +57,7 @@ async fn main() -> std::io::Result<()> {
    
     let handle3 = HttpServer::new(move || {
             App::new()
+                .wrap(Logger::default())
                 .data(app_state.clone())
                 .configure(config)
         })
