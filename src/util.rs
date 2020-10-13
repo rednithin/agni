@@ -81,10 +81,16 @@ pub fn get_local_ip() -> Vec<IpAddr> {
         .filter(|&x| {
             // let s = format!("{}", x);
             // s.contains("192.168")
-           x.is_multicast()
+           x.is_multicast() && x.is_broadcast()
         }
     )
-        .map(|location| location.ips.iter().map(|x| x.ip()))
+        .map(|location| 
+            location
+                .ips
+                .iter()
+                .map(|x| x.ip())
+                .filter(|x| x.is_ipv4())
+        )
         .flatten()
         .collect();
     
