@@ -2,18 +2,18 @@ use std::net::UdpSocket;
 use std::sync::Arc;
 use crate::util::get_local_ip;
 use uuid::Uuid;
-use std::net::IpAddr;
+use std::net::{IpAddr,Ipv4Addr};
 
-pub fn get_broadcast_presence_func(uuid: Uuid) -> impl Fn() {
+pub fn get_broadcast_presence_func(uuid: Uuid, unicast_ip: Option<String>) -> impl Fn() {
     let socket = UdpSocket::bind("[::]:0").unwrap();
-    socket.connect("239.255.255.250:1900").unwrap();
+    
+    // socket.connect("192.168.196.184:44909").unwrap();
     // socket.connect("[FF02::C]:1900").unwrap();
     // socket.connect("[FF05::C]:1900").unwrap();
     // socket.connect("[FF08::C]:1900").unwrap();
     // socket.connect("[FF0E::C]:1900").unwrap();
+    
     let socket = Arc::new(socket);
-    
-    
     
     let make_msg = |ip:IpAddr,nt: String, usn: String| format!("\
         NOTIFY * HTTP/1.1\r\n\
@@ -38,8 +38,13 @@ pub fn get_broadcast_presence_func(uuid: Uuid) -> impl Fn() {
     let msg_uuid = move |ip,uuid_urn: String | make_msg(ip, uuid_urn.clone(), uuid_urn.clone());
     
     let broadcast_message = move |desc, data: &[u8]| {
+        let addr = if let Some(x) = unicast_ip.clone() {
+            x
+        } else {
+            "239.255.255.250:1900".to_string()
+        };
         socket
-            .send(data)
+            .send_to(data, addr)
             .map(|bytes_written| 
                 if bytes_written != data.len() {
                     eprintln!("W: sending of {} truncated.", desc); 
@@ -66,4 +71,30 @@ pub fn get_broadcast_presence_func(uuid: Uuid) -> impl Fn() {
     };
 
     broadcast_presence
+}
+
+pub fn listen_to_discover_messages(uuid: Uuid) {
+    let socket = UdpSocket::bind("0.0.0.0:1900").unwrap();
+    socket.join_multicast_v4(
+        &Ipv4Addr::new(239,255,255,250), 
+        &Ipv4Addr::new(0,0,0,0),
+    ).unwrap();
+
+    loop {
+
+        let mut buf = [0; 2048];
+        
+        match socket.recv_from(&mut buf) {
+            
+            Ok((received, addr))=> {
+                let s = String::from_utf8_lossy(&buf[..received]);
+                if s.contains("M-SEARCH") &&  s.contains("ssdp:discover") && s.contains("ContentDirectory")  {
+                    let unicast_fn = get_broadcast_presence_func(uuid.clone(), Some(addr.to_string()));
+                    unicast_fn();
+                    println!("received from {:?}\nMessage:\n {:?}\n", addr, s)
+                }
+            },
+            Err(e) => println!("recv function failed: {:?}", e),
+        };
+    }
 }

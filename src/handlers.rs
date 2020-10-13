@@ -63,7 +63,7 @@ fn get_browse_response(list_items: &Vec<ListItemWrapper>) -> String {
 async fn root_handler(app_state: web::Data<Arc<Mutex<AppState>>>) -> impl Responder {
     let uuid_string = app_state.lock().unwrap().uuid.clone().to_string();
     let body = ROOT_XML
-                .replace("{name}", "Actix-Rednithin")
+                .replace("{name}", "Actix-Rednithin-Dev")
                 .replace("{uuid}", &uuid_string.clone());
     HttpResponse::Ok().content_type("text/xml").body(body)
 }

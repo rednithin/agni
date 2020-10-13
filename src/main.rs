@@ -24,14 +24,19 @@ async fn main() -> std::io::Result<()> {
 
     let uuid = Uuid::new_v4();
     
-    let broadcast_presence = broadcast::get_broadcast_presence_func(uuid.clone());
-    tokio::spawn(async move {
-        let mut interval = tokio::time::interval(tokio::time::Duration::from_millis(1000));
+    let broadcast_presence = broadcast::get_broadcast_presence_func(uuid.clone(), None);
+    let handle1 = tokio::spawn(async move {
+        let mut interval = tokio::time::interval(tokio::time::Duration::from_millis(2000));
         loop {
             interval.tick().await;
             broadcast_presence();
         }
     });
+
+    let handle2 = tokio::task::spawn_blocking(move || {
+        broadcast::listen_to_discover_messages(uuid.clone());
+    });
+
 
     let mut cache = get_cache();
     let mut item_map = HashMap::new();
@@ -51,12 +56,19 @@ async fn main() -> std::io::Result<()> {
     };
     let app_state = Arc::new(Mutex::new(app_state));
    
-    HttpServer::new(move || {
+    let handle3 = HttpServer::new(move || {
             App::new()
                 .data(app_state.clone())
                 .configure(config)
         })
         .bind("0.0.0.0:3030")?
-        .run()
-        .await
+        .run();
+    
+    tokio::select! {
+        _ = handle1 => 0,
+        _ = handle2 => 0,
+        _ = handle3 => 0,
+    };
+
+    Ok(())
 }
