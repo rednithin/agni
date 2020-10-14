@@ -11,7 +11,7 @@ pub async fn broadcast_message<'a>(desc: &'a str, data: &'a [u8], unicast_ip: &O
         "239.255.255.250:1900".to_string()
     };
     if !addr.contains("239.255.255.250:1900") {
-        // println!("To Address: {:?}\nMessage:\n {:?}\n", addr, String::from_utf8_lossy(data));
+        println!("To Address: {:?}\nMessage:\n {:?}\n", addr, String::from_utf8_lossy(data));
     }
     socket
         .send_to(data, addr)
