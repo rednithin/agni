@@ -25,15 +25,15 @@ async fn main() -> std::io::Result<()> {
     let uuid = Uuid::new_v4();
 
     let handle1 = tokio::spawn(async move {
+        broadcast::listen_to_discover_messages(uuid.clone()).await;
+    });
+
+    let handle2 = tokio::spawn(async move {
         let mut interval = tokio::time::interval(tokio::time::Duration::from_millis(2000));
         loop {
             interval.tick().await;
             broadcast::broadcast_presence(uuid.clone(), None).await;
         }
-    });
-
-    let handle2 = tokio::spawn(async move {
-        broadcast::listen_to_discover_messages(uuid.clone()).await;
     });
 
     let mut cache = get_cache();
