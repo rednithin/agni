@@ -151,7 +151,9 @@ async fn content_handler(
 
     let response = response.unwrap();
     let response = r#"<?xml version="1.0" encoding="UTF-8"?>
-    "#.to_string() + &response;
+    "#
+    .to_string()
+        + &response;
 
     log::info!("-----The Request Body-----\n{}\n", body_string);
     log::info!("Action: {}", action);
