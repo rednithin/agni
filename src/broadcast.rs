@@ -162,10 +162,21 @@ USN: {}\r\n\
 }
 
 pub async fn listen_to_discover_messages(uuid: Uuid) {
-    let mut socket = UdpSocket::bind("0.0.0.0:1900").await.unwrap();
-    socket
-        .join_multicast_v4(Ipv4Addr::new(239, 255, 255, 250), Ipv4Addr::new(0, 0, 0, 0))
-        .unwrap();
+    let mut socket = UdpSocket::bind("239.255.255.250:1900").await.unwrap();
+    let ips = get_local_ip();
+    for ip in ips {
+        let ip_string = ip.to_string();
+        let tokens = ip_string.split('.').collect::<Vec<&str>>();
+        let a = tokens[0].parse::<u8>().unwrap();
+        let b = tokens[1].parse::<u8>().unwrap();
+        let c = tokens[2].parse::<u8>().unwrap();
+        let d = tokens[3].parse::<u8>().unwrap();
+        match socket.join_multicast_v4(Ipv4Addr::new(239, 255, 255, 250), Ipv4Addr::new(a,b,c,d)) {
+            Ok(_) => println!("Connected to address: {}", &ip_string),
+            Err(_) => println!("Address already in use: {}", &ip_string),
+        };
+    };
+    
 
     loop {
         let mut buf = [0; 2048];
