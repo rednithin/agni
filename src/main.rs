@@ -64,7 +64,7 @@ async fn main() -> std::io::Result<()> {
     .run();
 
     tokio::select! {
-        _ = handle1 => 0,
+        // _ = handle1 => 0,
         _ = handle2 => 0,
         _ = handle3 => 0,
     };

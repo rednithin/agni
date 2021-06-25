@@ -4,8 +4,11 @@ use crate::types::{
 };
 use crate::util::read_directory;
 use actix_files::NamedFile;
-use actix_web::{get, post, web, HttpRequest, HttpResponse, Responder, Result as ActixResult};
-use bytes::Bytes;
+use actix_web::{
+    get, post,
+    web::{self, Bytes},
+    HttpRequest, HttpResponse, Responder, Result as ActixResult,
+};
 use log;
 use std::sync::{Arc, Mutex};
 
